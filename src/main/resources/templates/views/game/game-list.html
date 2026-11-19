@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(#{msg.game-list.title})}"></head>
+
+<body class="d-flex flex-column h-100">
+
+<header th:replace="~{fragments/header :: header}"></header>
+
+<main class="list-page">
+  <div class="list-card">
+
+    <h1 th:text="#{msg.game-list.title}"></h1>
+
+    <a th:href="@{/games/new}" class="btn btn-success" th:text="#{msg.game-list.add}"></a>
+
+    <!-- Mensajes (flash o del modelo) -->
+    <div th:if="${successMessage}" class="alert alert-success mt-3" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-danger mt-3" th:text="${errorMessage}"></div>
+
+    <table class="table table-bordered table-striped align-middle mt-3">
+      <thead>
+      <tr>
+        <!-- ID -->
+        <th>
+          <a class="text-decoration-none"
+             th:href="@{/games(page=${currentPage}, size=${pageSize}, sortField='id', sortDir=${(sortField == 'id') ? reverseSortDir : 'asc'})}">
+            <span th:text="#{msg.game-list.id}"></span>
+            <span class="ms-1" th:if="${sortField == 'id'}" th:text="${sortDir == 'asc'} ? '▲' : '▼'"></span>
+          </a>
+        </th>
+
+        <!-- Nombre -->
+        <th>
+          <a class="text-decoration-none"
+             th:href="@{/games(page=${currentPage}, size=${pageSize}, sortField='name', sortDir=${(sortField == 'name') ? reverseSortDir : 'asc'})}">
+            <span th:text="#{msg.game-list.name}"></span>
+            <span class="ms-1" th:if="${sortField == 'name'}" th:text="${sortDir == 'asc'} ? '▲' : '▼'"></span>
+          </a>
+        </th>
+
+        <th th:text="#{msg.game-list.actions}"></th>
+      </tr>
+      </thead>
+
+      <tbody>
+      <tr th:if="${listGames == null or #lists.isEmpty(listGames)}">
+        <td colspan="3" class="text-center text-muted" th:text="#{msg.game-list.empty}"></td>
+      </tr>
+      <tr th:each="game : ${listGames}">
+        <td th:text="${game.id}"></td>
+        <td th:text="${game.name}"></td>
+        <td>
+          <a th:href="@{/games/detail(id=${game.id})}"
+             class="btn btn-outline-secondary btn-sm me-1"
+             th:text="#{msg.game-list.viewDetail}"></a>
+
+          <a th:href="@{/games/edit(id=${game.id})}"
+             class="btn btn-primary btn-sm"
+             th:text="#{msg.game-list.edit}"></a>
+
+          <form th:action="@{/games/delete}" method="post" class="d-inline">
+            <input type="hidden" name="id" th:value="${game.id}"/>
+            <button type="submit"
+                    class="btn btn-danger btn-sm"
+                    th:text="#{msg.game-list.delete}"
+                    th:data-confirm-msg="#{msg.game-list.confirm}"
+                    onclick="return confirm(this.getAttribute('data-confirm-msg'));"></button>
+          </form>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+
+    <!-- Paginación -->
+    <div class="d-flex justify-content-between align-items-center mt-3"
+         th:if="${totalPages != null and totalPages > 0}">
+      <div>
+        <span th:text="#{msg.pagination.info(${currentPage} + 1, ${totalPages}, ${totalElements})}"></span>
+      </div>
+      <nav th:aria-label="#{msg.pagination.aria.label}">
+        <ul class="pagination mb-0">
+          <li class="page-item" th:classappend="${currentPage == 0} ? ' disabled'">
+            <a class="page-link"
+               th:href="@{/games(page=${currentPage - 1}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir})}"
+               th:aria-label="#{msg.pagination.prev}">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>
+          <li class="page-item"
+              th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+              th:classappend="${i} == ${currentPage} ? ' active'">
+            <a class="page-link"
+               th:text="${i + 1}"
+               th:href="@{/games(page=${i}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir})}"></a>
+          </li>
+          <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? ' disabled'">
+            <a class="page-link"
+               th:href="@{/games(page=${currentPage + 1}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir})}"
+               th:aria-label="#{msg.pagination.next}">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <a th:href="@{/}" class="btn btn-secondary mt-3" th:text="#{msg.game-form.returnhome}"></a>
+
+  </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+
+</body>
+</html>

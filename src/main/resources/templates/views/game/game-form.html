@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(#{msg.title})}"></head>
+
+<body class="d-flex flex-column h-100">
+
+<header th:replace="~{fragments/header :: header}"></header>
+
+<main class="form-page">
+    <div class="form-card">
+
+        <!-- Título dinámico (alta / edición) -->
+        <h1 th:text="${game.id} == null ? #{msg.game-form.add} : #{msg.game-form.edit}"></h1>
+
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+        <form th:action="${game.id} == null ? @{/games/insert} : @{/games/update}"
+              th:object="${game}" method="post" class="mt-3" novalidate>
+
+            <input type="hidden" th:field="*{id}" />
+
+            <!-- Nombre -->
+            <div class="mb-3">
+                <label for="name" class="form-label" th:text="#{msg.game-form.name}"></label>
+                <input type="text" id="name" th:field="*{name}" class="form-control"
+                       th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'" />
+                <div th:if="${#fields.hasErrors('name')}" class="text-danger" th:errors="*{name}"></div>
+            </div>
+
+            <button type="submit" class="btn btn-primary"
+                    th:text="${game.id} == null ? #{msg.game-form.create} : #{msg.game-form.update}"></button>
+
+            <a th:href="@{/games}" class="btn btn-secondary" th:text="#{msg.game-form.returnback}"></a>
+        </form>
+
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+
+</body>
+</html>

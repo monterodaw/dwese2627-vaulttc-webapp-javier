@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(#{msg.title})}"></head>
+
+<body class="d-flex flex-column h-100">
+
+<!-- Insertar el fragmento del header -->
+<header th:replace="~{fragments/header :: header}"></header>
+
+<main class="form-page">
+    <div class="form-card">
+
+        <!-- Título dinámico (alta / edición) -->
+        <h1 th:text="${character.id} == null ? #{msg.character-form.add} : #{msg.character-form.edit}"></h1>
+
+        <!-- Mensaje de error global -->
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+        <!-- Formulario. enctype multipart/form-data es OBLIGATORIO para poder subir ficheros -->
+        <form th:action="${character.id} == null ? @{/characters/insert} : @{/characters/update}"
+              th:object="${character}" method="post" enctype="multipart/form-data" class="mt-3" novalidate>
+
+            <input type="hidden" th:field="*{id}" />
+            <!-- Imagen actual (se conserva si no se sube otra) -->
+            <input type="hidden" th:field="*{imageUrl}" />
+
+            <!-- Nombre -->
+            <div class="mb-3">
+                <label for="name" class="form-label" th:text="#{msg.character-form.name}"></label>
+                <input type="text" id="name" th:field="*{name}" class="form-control"
+                       th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'" />
+                <div th:if="${#fields.hasErrors('name')}" class="text-danger" th:errors="*{name}"></div>
+            </div>
+
+            <!-- Descripción -->
+            <div class="mb-3">
+                <label for="description" class="form-label" th:text="#{msg.character-form.description}"></label>
+                <textarea id="description" th:field="*{description}" rows="3" class="form-control"
+                          th:classappend="${#fields.hasErrors('description')} ? 'is-invalid'"></textarea>
+                <div th:if="${#fields.hasErrors('description')}" class="text-danger" th:errors="*{description}"></div>
+            </div>
+
+            <!-- Juego (select). En edición aparece seleccionado el juego actual -->
+            <div class="mb-3">
+                <label for="gameId" class="form-label" th:text="#{msg.character-form.game}"></label>
+                <select id="gameId" class="form-select" th:field="*{gameId}"
+                        th:classappend="${#fields.hasErrors('gameId')} ? 'is-invalid'">
+                    <!-- Opción vacía / placeholder -->
+                    <option value="" th:text="#{msg.character-form.game.select}"></option>
+                    <!-- Opciones de juegos -->
+                    <option th:each="game : ${listGames}" th:value="${game.id}" th:text="${game.name}"></option>
+                </select>
+                <div class="text-danger" th:if="${#fields.hasErrors('gameId')}" th:errors="*{gameId}"></div>
+            </div>
+
+            <!-- Imagen -->
+            <div class="mb-3">
+                <label for="imageFile" class="form-label" th:text="#{msg.character-form.image}"></label>
+
+                <!-- Vista previa de la imagen actual (solo en edición) -->
+                <div th:if="${character.imageUrl != null}" class="mb-2">
+                    <img th:src="@{'/uploads/' + ${character.imageUrl}}" th:alt="#{msg.character-form.image.current}"
+                         class="character-preview">
+                    <div class="form-text" th:text="#{msg.character-form.image.keep}"></div>
+                </div>
+
+                <input type="file" id="imageFile" name="imageFile" class="form-control"
+                       accept="image/png,image/jpeg,image/gif,image/webp"
+                       th:classappend="${#fields.hasErrors('imageFile')} ? 'is-invalid'" />
+                <div class="form-text" th:text="#{msg.character-form.image.help}"></div>
+                <div class="text-danger" th:if="${#fields.hasErrors('imageFile')}" th:errors="*{imageFile}"></div>
+            </div>
+
+            <!-- Botón submit dinámico -->
+            <button type="submit" class="btn btn-primary"
+                    th:text="${character.id} == null ? #{msg.character-form.create} : #{msg.character-form.update}"></button>
+
+            <!-- Volver al listado -->
+            <a th:href="@{/characters}" class="btn btn-secondary" th:text="#{msg.character-form.returnback}"></a>
+        </form>
+
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+
+</body>
+</html>

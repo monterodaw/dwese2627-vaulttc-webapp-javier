@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(#{msg.title})}"></head>
+
+<body class="d-flex flex-column h-100">
+
+<header th:replace="~{fragments/header :: header}"></header>
+
+<main class="form-page">
+    <div class="form-card">
+
+        <h1>
+            <span th:text="#{msg.game-detail.title}"></span>:
+            <span th:text="${game.name}"></span>
+        </h1>
+
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+        <!-- Datos del juego -->
+        <div class="mt-3">
+            <h2 class="h5" th:text="#{msg.game-detail.section.gameData}"></h2>
+            <dl class="row">
+                <dt class="col-sm-4" th:text="#{msg.game-detail.field.id}"></dt>
+                <dd class="col-sm-8" th:text="${game.id}"></dd>
+
+                <dt class="col-sm-4" th:text="#{msg.game-detail.field.name}"></dt>
+                <dd class="col-sm-8" th:text="${game.name}"></dd>
+
+                <dt class="col-sm-4" th:text="#{msg.game-detail.field.logoUrl}"></dt>
+                <dd class="col-sm-8" th:text="${game.logoUrl} ?: '—'"></dd>
+            </dl>
+        </div>
+
+        <!-- Personajes del juego (lado N de la relación 1:N) -->
+        <div class="mt-4">
+            <h2 class="h5" th:text="#{msg.game-detail.section.characters}"></h2>
+
+            <div th:if="${#lists.isEmpty(game.characters)}" class="alert alert-info"
+                 th:text="#{msg.game-detail.characters.empty}"></div>
+
+            <table class="table table-bordered table-striped align-middle" th:if="${!#lists.isEmpty(game.characters)}">
+                <thead>
+                <tr>
+                    <th th:text="#{msg.game-detail.characters.id}"></th>
+                    <th th:text="#{msg.game-detail.characters.name}"></th>
+                    <th th:text="#{msg.game-list.actions}"></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${game.characters}">
+                    <td th:text="${c.id}"></td>
+                    <td th:text="${c.name}"></td>
+                    <td>
+                        <a class="btn btn-outline-secondary btn-sm"
+                           th:href="@{/characters/detail(id=${c.id})}"
+                           th:text="#{msg.game-list.viewDetail}"></a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-4">
+            <a class="btn btn-primary" th:href="@{/games/edit(id=${game.id})}"
+               th:text="#{msg.game-list.edit}"></a>
+            <a class="btn btn-secondary" th:href="@{/games}" th:text="#{msg.game-detail.action.back}"></a>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+
+</body>
+</html>

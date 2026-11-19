@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(#{msg.character-list.title})}"></head>
+
+<body class="d-flex flex-column h-100">
+
+<!-- Insertar el fragmento del header -->
+<header th:replace="~{fragments/header :: header}"></header>
+
+<main class="list-page">
+  <div class="list-card">
+
+    <!-- Título listado -->
+    <h1 th:text="#{msg.character-list.title}"></h1>
+
+    <!-- Botón para añadir nuevo personaje -->
+    <a th:href="@{/characters/new}"
+       class="btn btn-success"
+       th:text="#{msg.character-list.add}"></a>
+
+    <!-- Mensajes (flash o del modelo) -->
+    <div th:if="${successMessage}" class="alert alert-success mt-3" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-danger mt-3" th:text="${errorMessage}"></div>
+
+    <!-- Tabla de personajes -->
+    <table class="table table-bordered table-striped align-middle mt-3">
+      <thead>
+      <tr>
+        <!-- ID -->
+        <th>
+          <a class="text-decoration-none"
+             th:href="@{/characters(page=${currentPage}, size=${pageSize}, sortField='id', sortDir=${(sortField == 'id') ? reverseSortDir : 'asc'})}">
+            <span th:text="#{msg.character-list.id}"></span>
+            <span class="ms-1" th:if="${sortField == 'id'}" th:text="${sortDir == 'asc'} ? '▲' : '▼'"></span>
+          </a>
+        </th>
+
+        <!-- Imagen (no ordenable) -->
+        <th th:text="#{msg.character-list.image}"></th>
+
+        <!-- Nombre -->
+        <th>
+          <a class="text-decoration-none"
+             th:href="@{/characters(page=${currentPage}, size=${pageSize}, sortField='name', sortDir=${(sortField == 'name') ? reverseSortDir : 'asc'})}">
+            <span th:text="#{msg.character-list.name}"></span>
+            <span class="ms-1" th:if="${sortField == 'name'}" th:text="${sortDir == 'asc'} ? '▲' : '▼'"></span>
+          </a>
+        </th>
+
+        <!-- Juego (game.name) -->
+        <th>
+          <a class="text-decoration-none"
+             th:href="@{/characters(page=${currentPage}, size=${pageSize}, sortField='gameName', sortDir=${(sortField == 'gameName') ? reverseSortDir : 'asc'})}">
+            <span th:text="#{msg.character-list.game}"></span>
+            <span class="ms-1" th:if="${sortField == 'gameName'}" th:text="${sortDir == 'asc'} ? '▲' : '▼'"></span>
+          </a>
+        </th>
+
+        <th th:text="#{msg.character-list.actions}"></th>
+      </tr>
+      </thead>
+
+      <tbody>
+      <tr th:if="${listCharacters == null or #lists.isEmpty(listCharacters)}">
+        <td colspan="5" class="text-center text-muted" th:text="#{msg.character-list.empty}"></td>
+      </tr>
+      <tr th:each="character : ${listCharacters}">
+        <td th:text="${character.id}"></td>
+        <td>
+          <img th:if="${character.imageUrl != null}"
+               th:src="@{'/uploads/' + ${character.imageUrl}}"
+               th:alt="${character.name}"
+               class="character-thumb">
+          <span th:if="${character.imageUrl == null}" class="text-muted">—</span>
+        </td>
+        <td th:text="${character.name}"></td>
+        <!-- Nombre del juego asociado (relación 1:N) -->
+        <td th:text="${character.gameName}"></td>
+        <td>
+          <a th:href="@{/characters/detail(id=${character.id})}"
+             class="btn btn-outline-secondary btn-sm me-1"
+             th:text="#{msg.character-list.viewDetail}"></a>
+
+          <!-- Editar -->
+          <a th:href="@{/characters/edit(id=${character.id})}"
+             class="btn btn-primary btn-sm"
+             th:text="#{msg.character-list.edit}"></a>
+
+          <!-- Eliminar -->
+          <form th:action="@{/characters/delete}" method="post" class="d-inline">
+            <input type="hidden" name="id" th:value="${character.id}"/>
+            <button type="submit"
+                    class="btn btn-danger btn-sm"
+                    th:text="#{msg.character-list.delete}"
+                    th:data-confirm-msg="#{msg.character-list.confirm}"
+                    onclick="return confirm(this.getAttribute('data-confirm-msg'));"></button>
+          </form>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+
+    <!-- Paginación -->
+    <div class="d-flex justify-content-between align-items-center mt-3"
+         th:if="${totalPages != null and totalPages > 0}">
+      <div>
+        <span th:text="#{msg.pagination.info(${currentPage} + 1, ${totalPages}, ${totalElements})}"></span>
+      </div>
+      <nav th:aria-label="#{msg.pagination.aria.label}">
+        <ul class="pagination mb-0">
+          <li class="page-item" th:classappend="${currentPage == 0} ? ' disabled'">
+            <a class="page-link"
+               th:href="@{/characters(page=${currentPage - 1}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir})}"
+               th:aria-label="#{msg.pagination.prev}">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>
+          <li class="page-item"
+              th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+              th:classappend="${i} == ${currentPage} ? ' active'">
+            <a class="page-link"
+               th:text="${i + 1}"
+               th:href="@{/characters(page=${i}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir})}"></a>
+          </li>
+          <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? ' disabled'">
+            <a class="page-link"
+               th:href="@{/characters(page=${currentPage + 1}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir})}"
+               th:aria-label="#{msg.pagination.next}">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Volver -->
+    <a th:href="@{/}" class="btn btn-secondary mt-3" th:text="#{msg.character-form.returnback}"></a>
+
+  </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+
+</body>
+</html>
